@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+    <title>Storgle - IOTA File Storage</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css" integrity="sha256-BJ/G+e+y7bQdrYkS2RBTyNfBHpA9IuGaPmf9htub5MQ=" crossorigin="anonymous" />
+    <link href="css/storgle.css" rel="stylesheet">
+  </head>
+  <body>
+    <header>
+      <div class="collapse bg-dark" id="navbarHeader">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-8 col-md-7 py-4">
+              <h4 class="text-white">About</h4>
+              <p class="text-muted">Storgle is a minimalistic webapp which enables you to upload encrypted file to the IOTA Tangle. More informations in my <a href="https://b3rsrk.sh" class="text-white">Blog Post</a>.</p>
+            </div>
+            <div class="col-sm-4 offset-md-1 py-4">
+              <h4 class="text-white">Contact</h4>
+              <ul class="list-unstyled">
+                <li><a href="https://b3rsrk.sh" class="text-white">Blog</a></li>
+                <li><a href="https://twitter.com/b3rsrk" class="text-white">Twitter</a></li>
+                <li><a href="mailto:mail@b3rsrk.sh" class="text-white">Email</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="navbar navbar-dark bg-dark box-shadow">
+        <div class="container d-flex justify-content-between">
+          <a href="#" class="navbar-brand d-flex align-items-center">
+            <span class="oi oi-cloud"></span>&nbsp;
+            <strong>Storgle</strong>
+          </a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="app">
+      <main role="main" class="frame">
+        <div class="container">
+          <div class="row">
+            <div class="col-md">
+              <div id="card1" class="card mb-4 box-shadow">
+                <div style="background-color: #343a40; text-align: center; color: white; padding: 2rem;">
+                  <span class="oi oi-cloud-upload display-1"></span>
+                </div>
+                <div class="card-body">
+                  <p class="card-text">Upload a file to the IOTA Tangle. It's recommended to upload only small files (< 1MB), because you have to do PoW for every KB uploaded.</p>
+                  <form enctype="multipart/form-data">
+                    <div class="form-group">
+                      <label for="upload_file"><span class="oi oi-file oi-light"></span> File</label>
+                      <input type="file" @change="onFileChange" class="form-control-file" id="file" :disabled="locked">
+                    </div>
+                    <div class="form-group">
+                      <label for="upload_password"><span class="oi oi-lock-locked oi-light"></span> Password</label>
+                      <input type="password" v-model="uploadPassword" class="form-control" id="upload_password" placeholder="Password" :disabled="locked">
+                    </div>
+                    <div id="fill1"></div>
+                    <button v-if="!progress1Visible" v-on:click="upload_wrapper" type="button" class="btn btn-secondary btn-lg btn-block" :disabled="locked">
+                      <span class="oi oi-data-transfer-upload"></span> Upload
+                    </button>
+                    <div v-if="progress1Visible" class="progress">
+                      <div class="progress-bar" role="progressbar" v-bind:style="{width: progressValue + '%'}" :aria-valuenow="progressValue" aria-valuemin="0" aria-valuemax="100">{{ progressText }}</div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="col-md">
+              <div id="card2" class="card mb-4 box-shadow">
+                <div style="background-color: #343a40; text-align: center; color: white; padding: 2rem;">
+                  <span class="oi oi-cloud-download display-1"></span>
+                </div>
+                <div class="card-body">
+                  <p class="card-text">Download a file stored on the IOTA Tangle. Use the File Hash displayed after a successfull upload of a file. This process is usually much faster than the upload.</p>
+                  <form>
+                    <div class="form-group">
+                      <label for="download_tag"><span class="oi oi-paperclip oi-light"></span> File Hash</label>
+                      <input type="text" v-model="hash" class="form-control" id="download_tag" aria-describedby="emailHelp" placeholder="Hash" :disabled="locked">
+                    </div>
+                    <div class="form-group">
+                      <label for="download_password"><span class="oi oi-lock-unlocked oi-light"></span> Password</label>
+                      <input type="password" v-model="downloadPassword" class="form-control" id="download_password" placeholder="Password" :disabled="locked">
+                    </div>
+                  </form>
+                  <div id="fill2"></div>
+                  <button v-if="!progress2Visible" v-on:click="download" type="button" class="btn btn-secondary btn-lg btn-block" :disabled="locked">
+                    <span class="oi oi-data-transfer-download"></span> Download
+                  </button>
+                  <div v-if="progress2Visible" class="progress">
+                    <div class="progress-bar" role="progressbar" v-bind:style="{width: progressValue + '%'}" :aria-valuenow="progressValue" aria-valuemin="0" aria-valuemax="100">{{ progressText }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="logVisible" class="log">
+            <div class="card">
+              <div class="card-header">
+                <span class="oi oi-clipboard"></span> Log
+              </div>
+              <div class="card-body">
+                <textarea id="log_area" class="text-muted" readonly>{{ log }}</textarea>
+              </div>
+            </div>
+            <br/>
+          </div>
+        </div>
+
+        <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="warningModalLabel"><span class="oi oi-warning"></span> Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                This is experimental software. Don't rely on secure and future-proof storage of your files!
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal"><span class="oi oi-ban"></span> Cancel</button>
+                <button type="button" v-on:click="upload" class="btn btn-success" data-dismiss="modal"><span class="oi oi-check"></span> Continue</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel"><span class="oi oi-circle-x"></span> Error</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                Please fill all fields correctly!
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal"><span class="oi oi-check"></span> OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel"><span class="oi oi-check"></span> Success</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                Your file was successfull uploaded to the IOTA Tangle.<br/>
+                <br/>
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <td>File Hash:</td>
+                      <td><code>{{ uploadedToken }}</code></td>
+                    </tr>
+                    <tr>
+                      <td>Direct Link:</td>
+                      <td><a v-bind:href="uploadedLink">Link</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal"><span class="oi oi-check"></span> OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="optionsModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="optionsModalLabel"><span class="oi oi-cog"></span> Settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form>
+                  <div class="form-group">
+                    <label for="providers"><span class="oi oi-globe oi-light"></span> Providers</label>
+                    <textarea id="providers" class="text-muted" v-model="providers" class="form-control" :disabled="locked"></textarea>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal"><span class="oi oi-ban"></span> Cancel</button>
+                <button type="button" v-on:click="saveSettings" class="btn btn-success" data-dismiss="modal"><span class="oi oi-check"></span> Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="passwordModalLabel"><span class="oi oi-lock-open"></span> Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form>
+                  <div class="form-group">
+                    <label for="download_password_dialog"><span class="oi oi-lock-unlocked oi-light"></span> Password</label>
+                    <input type="password" v-model="download_password" class="form-control" id="download_password_dialog" placeholder="Password">
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal"><span class="oi oi-ban"></span> Cancel</button>
+                <button type="button" v-on:click="download" class="btn btn-success" data-dismiss="modal"><span class="oi oi-check"></span> Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <div class="container">
+          <span class="text-muted">©2018 All rights reserved.</span>
+          <div class="float-right">
+            <a href="" v-on:click.stop.prevent="loadSettings" class="text-muted"><span class="oi oi-cog"></span> Show settings</a>&nbsp;
+            <a href="" v-on:click.stop.prevent="toggleLog" class="text-muted"><span class="oi oi-clipboard"></span> {{ logText }}</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js" integrity="sha384-2epjwyVj8M4n8AweIsY7SKPSJmqBBBkmksXvkmtYORfxPS1I4NZE/+Ttk/9gCELG" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aes-js/3.1.0/index.min.js" integrity="sha384-Pf32ciC0YUXrWlBqIwkq83ixqoVRLIiSabOfWpYIGHzvq9sM5gcGeVp0JeEPRSKD" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="js/EventEmitter.min.js"></script>
+    <script src="js/iota.min.js"></script>
+    <script src="js/curl.min.js"></script>
+    <script src="js/storgle.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
