@@ -48,15 +48,15 @@ var app = new Vue({
     },
     bundle_listener: function (bundle) {
       this.uploadedToken = bundle;
-      this.uploadedLink = location.protocol + '//' + window.location.hostname + '/?hash=' + this.uploadedToken;
+      this.uploadedLink = location.protocol + '//' + window.location.hostname + '/index.html?hash=' + this.uploadedToken;
       if(this.uploadPassword != '') {
         this.uploadedLink += '&password=1'
       }
     },
     progress_listener: function (value) {
-      this.progress_value = value;
+      this.progressValue = value;
       if(value >= 10) {
-        this.progress_text = value + '%'
+        this.progressText = value + '%'
       }
 
       if(value == 100) {
