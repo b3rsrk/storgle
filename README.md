@@ -4,6 +4,8 @@ Storgle is a minimalistic webapp which enables you to upload encrypted files to 
 
 A working demo is available at [https://storgle.io](https://storgle.io/index.html)
 
+![Screenshot](screenshot.png)
+
 ## Specifications:
 
 * Using JavaScript to handle IOTA network communication
