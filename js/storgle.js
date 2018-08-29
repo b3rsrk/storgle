@@ -8,13 +8,13 @@ window.storgle = (function() {
   let download_hash = ''
   let password_key = undefined
   var providers = [
+    "https://wallet1.iota.town:443",
     "https://iotanode.us:443",
     "https://node.iota.dance:443",
     "https://nodes.iota.cafe:443",
     "https://iri2-api.iota.fm:443",
     "https://nelson1-api.iota.fm:443",
-    "https://node.neffware.com:443",
-    "https://wallet1.iota.town:443",
+    "https://node.neffware.com:443",    
   ]
   const tryteAlphabet = '9ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const eventEmitter = new EventEmitter()
